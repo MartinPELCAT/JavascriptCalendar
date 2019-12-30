@@ -58,3 +58,23 @@
     font-size: x-large;
     padding: 0;
 }
+
+.lockedStart {
+    border-radius: 10px 0 0 10px;
+    margin-left: 5px;
+}
+
+.lockedEnd {
+    border-radius: 0 10px 10px 0;
+    margin-right: 5px;
+}
+
+.locked {
+    background-color: blue;
+    height: 30px;
+    top: 50%;
+}
+
+.lockedStart.lockedEnd {
+    border-radius: 10px 10px 10px 10px;
+}
