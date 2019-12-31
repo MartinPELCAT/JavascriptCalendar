@@ -6,38 +6,33 @@ window.addEventListener("DOMContentLoaded", () => {
         var now = moment().add(value, 'M');
         $("#currentMonth").html(moment().month(now.month()).format("MMMM") + " " + moment(now).year());
         displayCalendar(getRange(moment(now).startOf("month"), moment(now).endOf("month")));
+        var firstDayRange;
+        $(".days").mousedown(function (e) {
+            firstDayRange = $(this);
+            renderLock(firstDayRange, firstDayRange);
+            $(".days").mouseover(function (e) {
+                renderLock(firstDayRange, $(this));
+            });
+        });
+        $(".days").mouseup(function (e) {
+            renderLock(firstDayRange, $(this));
+            $(".days").unbind("mouseover");
+        });
+        $("#calendar").mouseleave(function () {
+            $(".days").unbind("mouseover");
+        })
     }
-
     main(currentMonth);
     $("#prevMonth").click(function () {
         currentMonth--;
         main(currentMonth);
     });
-
     $("#nextMonth").click(function () {
         currentMonth++;
         main(currentMonth);
     });
 
-    var firstDayRange;
-
-    $(".days").mousedown(function (e) {
-        firstDayRange = $(this);
-        renderLock(firstDayRange, firstDayRange);
-        $(".days").mouseover(function (e) {
-            renderLock(firstDayRange, $(this));
-        });
-    });
-    $(".days").mouseup(function (e) {
-        renderLock(firstDayRange, $(this));
-        $(".days").unbind("mouseover");
-    });
-
-    $("#calendar").mouseleave(function () {
-        $(".days").unbind("mouseover");
-    })
 });
-
 let getRange = function (firstDay, lastDay) {
     let fistDayToDisplay = moment(firstDay).startOf("week")
     let lastDayToDisplay = moment(lastDay).endOf("week")
@@ -49,7 +44,6 @@ let getRange = function (firstDay, lastDay) {
         "nbOfWeeks": (lastDayToDisplay.diff(fistDayToDisplay, 'days') + 1) / 7
     };
 }
-
 let displayCalendar = function (range) {
     var dayToDisplay = range.fistDayToDisplay;
     for (let week = 0; week < range.nbOfWeeks; week++) {
@@ -64,9 +58,7 @@ let displayCalendar = function (range) {
         }
     }
 }
-
 let renderLock = function (firstRange, lastRange) {
-
     let date1 = moment(firstRange[0].id, "DD-MM-YYYY");
     let date2 = moment(lastRange[0].id, "DD-MM-YYYY");
     if (date1.isAfter(date2, 'days') || date2.isAfter(date1, 'days')) {
@@ -78,34 +70,27 @@ let renderLock = function (firstRange, lastRange) {
         let lastLockedElement = lastRange.find(".locked");
         let class1;
         let class2;
-
         if (date1.isAfter(date2, 'days')) { //date1 end - date2 start 
             class1 = "lockedEnd";
             class2 = "lockedStart";
             var daysRange = lastRange.nextUntil(firstRange, ".col");
-
         } else { //date1 start - date2 end 
             class2 = "lockedEnd";
             class1 = "lockedStart";
             var daysRange = firstRange.nextUntil(lastRange, ".col");
-
         }
-
         if (firstLockedElement.length == 0) {
             firstRange.append("<div class='" + class1 + " locked'></div>")
         } else {
             firstLockedElement.addClass(class1);
             firstLockedElement.removeClass(class2)
         }
-
         if (lastLockedElement.length == 0) {
             lastRange.append("<div class='locked " + class2 + "'></div>")
         } else {
             lastLockedElement.addClass(class2);
             lastLockedElement.removeClass(class1)
         }
-
-
         daysRange.each(function () {
             var _day = $(this);
             let lockedElement = _day.find(".locked");
@@ -124,7 +109,4 @@ let renderLock = function (firstRange, lastRange) {
             lockedElement.addClass("lockedStart locked lockedEnd");
         }
     }
-
-
-
 }
