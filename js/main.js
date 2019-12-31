@@ -61,23 +61,20 @@ let displayCalendar = function (range) {
 let renderLock = function (firstRange, lastRange) {
     let date1 = moment(firstRange[0].id, "DD-MM-YYYY");
     let date2 = moment(lastRange[0].id, "DD-MM-YYYY");
+    let firstLockedElement = firstRange.find(".locked");
+    let lastLockedElement = lastRange.find(".locked");
     if (date1.isAfter(date2, 'days') || date2.isAfter(date1, 'days')) {
-        /**
-         * date1 end
-         * date2 start 
-         */
-        let firstLockedElement = firstRange.find(".locked");
-        let lastLockedElement = lastRange.find(".locked");
         let class1;
         let class2;
+        let daysRange;
         if (date1.isAfter(date2, 'days')) { //date1 end - date2 start 
             class1 = "lockedEnd";
             class2 = "lockedStart";
-            var daysRange = lastRange.nextUntil(firstRange, ".col");
+            daysRange = lastRange.nextUntil(firstRange, ".col");
         } else { //date1 start - date2 end 
             class2 = "lockedEnd";
             class1 = "lockedStart";
-            var daysRange = firstRange.nextUntil(lastRange, ".col");
+            daysRange = firstRange.nextUntil(lastRange, ".col");
         }
         if (firstLockedElement.length == 0) {
             firstRange.append("<div class='" + class1 + " locked'></div>")
@@ -102,11 +99,27 @@ let renderLock = function (firstRange, lastRange) {
             }
         })
     } else {
-        let lockedElement = firstRange.find(".locked");
-        if (lockedElement.length == 0) {
+        if (firstLockedElement.length == 0) {
             firstRange.append("<div class='lockedStart locked lockedEnd'></div>")
         } else {
-            lockedElement.addClass("lockedStart locked lockedEnd");
+            firstLockedElement.addClass("lockedStart locked lockedEnd");
         }
+    }
+    smoothify(firstRange);
+    smoothify(lastRange);
+}
+
+let smoothify = function (element) {
+    let prevElement = element.prevAll(".col").first().find(".locked");
+    let nextElement = element.nextAll(".col").first().find(".locked");
+    let elementLock = element.find(".locked");
+    if (prevElement.length > 0) {
+        elementLock.removeClass("lockedStart");
+        prevElement.removeClass("lockedEnd");
+    }
+
+    if (nextElement.length > 0) {
+        elementLock.removeClass("lockedEnd");
+        nextElement.removeClass("lockedStart");
     }
 }
