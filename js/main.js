@@ -7,33 +7,37 @@ window.addEventListener("DOMContentLoaded", () => {
         $("#currentMonth").html(moment().month(now.month()).format("MMMM") + " " + moment(now).year());
         displayCalendar(getRange(moment(now).startOf("month"), moment(now).endOf("month")));
         var firstDayRange;
-        $(".days").mousedown(function (e) {
+        var isCreate = true;
+        $(".days").mousedown(function(e) {
             firstDayRange = $(this);
-            renderLock(firstDayRange, firstDayRange);
-            $(".days").mouseover(function (e) {
-                renderLock(firstDayRange, $(this));
+            if (firstDayRange.find(".locked").length > 0) isCreate = false;
+            renderLock(firstDayRange, firstDayRange, isCreate);
+            $(".days").mouseenter(function(e) {
+                $(".tmp").remove();
+                renderLock(firstDayRange, $(this), isCreate);
             });
         });
-        $(".days").mouseup(function (e) {
-            renderLock(firstDayRange, $(this));
-            $(".days").unbind("mouseover");
+        $(".days").mouseup(function(e) {
+            renderLock(firstDayRange, $(this), isCreate);
+            $(".days").unbind("mouseenter");
+            $(".tmp").removeClass("tmp");
+            isCreate = true;
         });
-        $("#calendar").mouseleave(function () {
-            $(".days").unbind("mouseover");
+        $("#calendar").mouseleave(function() {
+            $(".days").unbind("mouseenter");
         })
     }
     main(currentMonth);
-    $("#prevMonth").click(function () {
+    $("#prevMonth").click(function() {
         currentMonth--;
         main(currentMonth);
     });
-    $("#nextMonth").click(function () {
+    $("#nextMonth").click(function() {
         currentMonth++;
         main(currentMonth);
     });
-
 });
-let getRange = function (firstDay, lastDay) {
+let getRange = function(firstDay, lastDay) {
     let fistDayToDisplay = moment(firstDay).startOf("week")
     let lastDayToDisplay = moment(lastDay).endOf("week")
     return {
@@ -44,7 +48,7 @@ let getRange = function (firstDay, lastDay) {
         "nbOfWeeks": (lastDayToDisplay.diff(fistDayToDisplay, 'days') + 1) / 7
     };
 }
-let displayCalendar = function (range) {
+let displayCalendar = function(range) {
     var dayToDisplay = range.fistDayToDisplay;
     for (let week = 0; week < range.nbOfWeeks; week++) {
         $("#calendarBody .row").append('<div class="w-100 days"></div>');
@@ -58,7 +62,7 @@ let displayCalendar = function (range) {
         }
     }
 }
-let renderLock = function (firstRange, lastRange) {
+let renderLock = function(firstRange, lastRange, createStatus) {
     let date1 = moment(firstRange[0].id, "DD-MM-YYYY");
     let date2 = moment(lastRange[0].id, "DD-MM-YYYY");
     let firstLockedElement = firstRange.find(".locked");
@@ -76,50 +80,75 @@ let renderLock = function (firstRange, lastRange) {
             class1 = "lockedStart";
             daysRange = firstRange.nextUntil(lastRange, ".col");
         }
-        if (firstLockedElement.length == 0) {
-            firstRange.append("<div class='" + class1 + " locked'></div>")
+        if (firstLockedElement.length == 0 && createStatus) {
+            firstRange.append("<div class='" + class1 + " locked' tmp></div>")
         } else {
+            if (!createStatus) {
+                firstLockedElement.remove();
+            }
             firstLockedElement.addClass(class1);
             firstLockedElement.removeClass(class2)
         }
-        if (lastLockedElement.length == 0) {
-            lastRange.append("<div class='locked " + class2 + "'></div>")
+        if (lastLockedElement.length == 0 && createStatus) {
+            lastRange.append("<div class='locked " + class2 + " tmp'></div>")
         } else {
+            if (!createStatus) {
+                lastLockedElement.remove();
+            }
             lastLockedElement.addClass(class2);
             lastLockedElement.removeClass(class1)
         }
-        daysRange.each(function () {
+        daysRange.each(function() {
             var _day = $(this);
             let lockedElement = _day.find(".locked");
-            if (lockedElement.length == 0) {
-                _day.append("<div class='locked'></div>")
+            if (lockedElement.length == 0 && createStatus) {
+                _day.append("<div class='locked tmp'></div>")
             } else {
+                if (!createStatus) {
+                    lockedElement.remove();
+                }
                 lockedElement.removeClass(class1)
                 lockedElement.removeClass(class2)
             }
         })
     } else {
-        if (firstLockedElement.length == 0) {
+        if (firstLockedElement.length == 0 && createStatus) {
             firstRange.append("<div class='lockedStart locked lockedEnd'></div>")
         } else {
+            if (!createStatus) {
+                firstLockedElement.remove();
+            }
             firstLockedElement.addClass("lockedStart locked lockedEnd");
         }
     }
-    smoothify(firstRange);
-    smoothify(lastRange);
+    smoothifyAll();
 }
-
-let smoothify = function (element) {
-    let prevElement = element.prevAll(".col").first().find(".locked");
-    let nextElement = element.nextAll(".col").first().find(".locked");
-    let elementLock = element.find(".locked");
-    if (prevElement.length > 0) {
-        elementLock.removeClass("lockedStart");
-        prevElement.removeClass("lockedEnd");
-    }
-
-    if (nextElement.length > 0) {
-        elementLock.removeClass("lockedEnd");
-        nextElement.removeClass("lockedStart");
+let smoothifyAll = function() {
+    let allDays = $(".days.col");
+    for (let index = 0; index < allDays.length; index++) {
+        let element = allDays[index];
+        if (index === 0) {
+            if ($(allDays[index + 1]).find(".locked").length > 0) {
+                $(element).find(".locked").removeClass("lockedEnd");
+                $(allDays[index + 1]).find(".locked").removeClass("lockedStart")
+            }
+        } else if (index == allDays.length - 1) {
+            //Do nothing
+        } else {
+            if ($(allDays[index + 1]).find(".locked").length > 0 && $(element).find(".locked").length > 0) {
+                $(element).find(".locked").removeClass("lockedEnd");
+                $(allDays[index + 1]).find(".locked").removeClass("lockedStart")
+            } else {
+                $(element).find(".locked").addClass("lockedEnd");
+                $(allDays[index + 1]).find(".locked").addClass("lockedStart")
+            }
+            if ($(allDays[index - 1]).find(".locked").length > 0 && $(element).find(".locked").length > 0) {
+                $(element).find(".locked").removeClass("lockedStart");
+                $(allDays[index - 1]).find(".locked").removeClass("lockedEnd")
+            } else {
+                $(element).find(".locked").addClass("lockedStart");
+                $(allDays[index - 1]).find(".locked").addClass("lockedEnd")
+            }
+        }
     }
 }
