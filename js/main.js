@@ -14,10 +14,12 @@ window.addEventListener("DOMContentLoaded", () => {
             renderLock(firstDayRange, firstDayRange, isCreate);
             $(".days").mouseenter(function(e) {
                 $(".tmp").remove();
+                $(".lockedRemove").removeClass("lockedRemove");
                 renderLock(firstDayRange, $(this), isCreate);
             });
         });
         $(".days").mouseup(function(e) {
+            $(".lockedRemove").remove();
             renderLock(firstDayRange, $(this), isCreate);
             $(".days").unbind("mouseenter");
             $(".tmp").removeClass("tmp");
@@ -84,7 +86,7 @@ let renderLock = function(firstRange, lastRange, createStatus) {
             firstRange.append("<div class='" + class1 + " locked' tmp></div>")
         } else {
             if (!createStatus) {
-                firstLockedElement.remove();
+                firstLockedElement.addClass("lockedRemove");
             }
             firstLockedElement.addClass(class1);
             firstLockedElement.removeClass(class2)
@@ -93,7 +95,7 @@ let renderLock = function(firstRange, lastRange, createStatus) {
             lastRange.append("<div class='locked " + class2 + " tmp'></div>")
         } else {
             if (!createStatus) {
-                lastLockedElement.remove();
+                lastLockedElement.addClass("lockedRemove");
             }
             lastLockedElement.addClass(class2);
             lastLockedElement.removeClass(class1)
@@ -105,7 +107,7 @@ let renderLock = function(firstRange, lastRange, createStatus) {
                 _day.append("<div class='locked tmp'></div>")
             } else {
                 if (!createStatus) {
-                    lockedElement.remove();
+                    lockedElement.addClass("lockedRemove");
                 }
                 lockedElement.removeClass(class1)
                 lockedElement.removeClass(class2)
@@ -116,7 +118,7 @@ let renderLock = function(firstRange, lastRange, createStatus) {
             firstRange.append("<div class='lockedStart locked lockedEnd'></div>")
         } else {
             if (!createStatus) {
-                firstLockedElement.remove();
+                firstLockedElement.addClass("lockedRemove");
             }
             firstLockedElement.addClass("lockedStart locked lockedEnd");
         }
@@ -131,10 +133,10 @@ let smoothifyAll = function() {
             if ($(allDays[index + 1]).find(".locked").length > 0) {
                 $(element).find(".locked").removeClass("lockedEnd");
                 $(allDays[index + 1]).find(".locked").removeClass("lockedStart")
+            } else if ($(allDays[index + 1]).find(".lockedRemove").length > 0) {
+                $(element).find(".locked").addClass("lockedEnd");
             }
-        } else if (index == allDays.length - 1) {
-            //Do nothing
-        } else {
+        } else if (index != allDays.length - 1) {
             if ($(allDays[index + 1]).find(".locked").length > 0 && $(element).find(".locked").length > 0) {
                 $(element).find(".locked").removeClass("lockedEnd");
                 $(allDays[index + 1]).find(".locked").removeClass("lockedStart")
@@ -149,6 +151,14 @@ let smoothifyAll = function() {
                 $(element).find(".locked").addClass("lockedStart");
                 $(allDays[index - 1]).find(".locked").addClass("lockedEnd")
             }
+            // Shit logic >
+            if ($(allDays[index - 1]).find(".lockedRemove").length > 0) {
+                $(element).find(".locked").addClass("lockedStart");
+            }
+            if ($(element).find(".lockedRemove").length > 0) {
+                $(allDays[index - 1]).find(".locked").addClass("lockedEnd")
+            }
+            // < Shit logic
         }
     }
 }

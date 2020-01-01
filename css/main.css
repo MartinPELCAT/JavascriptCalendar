@@ -85,4 +85,10 @@
     border-radius: 10px 10px 10px 10px;
     margin-right: 5px;
     margin-left: 5px;
+} 
+
+
+.lockedRemove{
+    background-color: unset;
+
 }
