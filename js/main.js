@@ -8,38 +8,38 @@ window.addEventListener("DOMContentLoaded", () => {
         displayCalendar(getRange(moment(now).startOf("month"), moment(now).endOf("month")));
         var firstDayRange;
         var isCreate = true;
-        $(".days").mousedown(function(e) {
+        $(".days").mousedown(function (e) {
             firstDayRange = $(this);
             if (firstDayRange.find(".locked").length > 0) isCreate = false;
             renderLock(firstDayRange, firstDayRange, isCreate);
-            $(".days").mouseenter(function(e) {
+            $(".days").mouseenter(function (e) {
                 $(".tmp").remove();
                 $(".lockedRemove").removeClass("lockedRemove");
                 renderLock(firstDayRange, $(this), isCreate);
             });
         });
-        $(".days").mouseup(function(e) {
+        $(".days").mouseup(function (e) {
             $(".lockedRemove").remove();
             renderLock(firstDayRange, $(this), isCreate);
             $(".days").unbind("mouseenter");
             $(".tmp").removeClass("tmp");
             isCreate = true;
         });
-        $("#calendar").mouseleave(function() {
+        $("#calendar").mouseleave(function () {
             $(".days").unbind("mouseenter");
         })
     }
     main(currentMonth);
-    $("#prevMonth").click(function() {
+    $("#prevMonth").click(function () {
         currentMonth--;
         main(currentMonth);
     });
-    $("#nextMonth").click(function() {
+    $("#nextMonth").click(function () {
         currentMonth++;
         main(currentMonth);
     });
 });
-let getRange = function(firstDay, lastDay) {
+let getRange = function (firstDay, lastDay) {
     let fistDayToDisplay = moment(firstDay).startOf("week")
     let lastDayToDisplay = moment(lastDay).endOf("week")
     return {
@@ -50,7 +50,7 @@ let getRange = function(firstDay, lastDay) {
         "nbOfWeeks": (lastDayToDisplay.diff(fistDayToDisplay, 'days') + 1) / 7
     };
 }
-let displayCalendar = function(range) {
+let displayCalendar = function (range) {
     var dayToDisplay = range.fistDayToDisplay;
     for (let week = 0; week < range.nbOfWeeks; week++) {
         $("#calendarBody .row").append('<div class="w-100 days"></div>');
@@ -64,7 +64,7 @@ let displayCalendar = function(range) {
         }
     }
 }
-let renderLock = function(firstRange, lastRange, createStatus) {
+let renderLock = function (firstRange, lastRange, createStatus) {
     let date1 = moment(firstRange[0].id, "DD-MM-YYYY");
     let date2 = moment(lastRange[0].id, "DD-MM-YYYY");
     let firstLockedElement = firstRange.find(".locked");
@@ -100,7 +100,7 @@ let renderLock = function(firstRange, lastRange, createStatus) {
             lastLockedElement.addClass(class2);
             lastLockedElement.removeClass(class1)
         }
-        daysRange.each(function() {
+        daysRange.each(function () {
             var _day = $(this);
             let lockedElement = _day.find(".locked");
             if (lockedElement.length == 0 && createStatus) {
@@ -125,7 +125,7 @@ let renderLock = function(firstRange, lastRange, createStatus) {
     }
     smoothifyAll();
 }
-let smoothifyAll = function() {
+let smoothifyAll = function () {
     let allDays = $(".days.col");
     for (let index = 0; index < allDays.length; index++) {
         let element = allDays[index];
@@ -159,6 +159,10 @@ let smoothifyAll = function() {
                 $(allDays[index - 1]).find(".locked").addClass("lockedEnd")
             }
             // < Shit logic
+        } else {
+            if ($(allDays[index - 1]).find(".locked").length == 0 || $(allDays[index - 1]).find(".lockedRemove").length > 0) {
+                $(element).find(".locked").addClass("lockedStart");
+            }
         }
     }
 }
